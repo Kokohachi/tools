@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--見ないで！変態！-->
+<html>
+<head>
+  <title>URLから動画、音源をダウンロード</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: rgb(181, 246, 255);
+      background-size: cover;
+      background-position: center;
+      text-align: center;
+      margin: 0;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 50px;
+      color: #ff3c3c;
+    }
+
+    h3 {
+      text-align: center;
+      margin-top: 20px;
+      color: #000704;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"],
+    select {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 30px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #495057;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      /* カーソルを合わせたときのスタイルを指定 */
+      background-color: rgb(188, 204, 255); /* 例: 背景色を赤に変更 */
+      color: #fff; /* 例: 文字色を白に変更 */
+    }
+
+    #download-message {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+      color: #6c757d;
+    }
+  </style>
+  </head>
+<body>
+  <h1>動画ダウンロード</h1>
+  <h3>一部動画サイトはダウンロードに時間がかかる場合があります。</h3>
+    <form id="download-form" method="post" action="media_dl/info">
+      <label for="url">URL</label>
+      <input type="text" id="url" name="url">
+      <br>
+      <label for="format">フォーマット</label>
+      <select id="format" name="format">
+          <option value="mp3">MP3</option>
+          <option value="wav">WAV</option>
+          <option value="mp4">MP4</option>
+      </select>
+      <br>
+      <input type="submit" value="ダウンロード">
+      <br>
+    </form>
+
+    <div id="download-message" style="display: none;">
+      <p>処理中です...<p>
+    </div>
+
+    <script>
+    const downloadForm = document.querySelector('form');
+
+    const downloadMessage = document.getElementById('download-message');
+
+    downloadForm.addEventListener('submit', () => {
+      downloadMessage.style.display = 'block';
+    });
+
+    window.addEventListener('unload', () => {
+      downloadMessage.style.display = 'none';
+    });
+    </script>
+</body>
