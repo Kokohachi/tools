@@ -1,23 +1,22 @@
-from flask import *
-import yt_dlp
 import os
 import glob
 import uuid
 import io
 import json
-
-from sus_tools.event import *
-from sus_tools.score import *
-from sus_tools.sus_draw import *
-
+from flask import Flask, render_template, request, jsonify, send_file
+import yt_dlp
+from sus_tools.event import eventdump, Event
+from sus_tools.sus_draw import SUS
 
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
+
 @app.route('/media_dl')
 def index():
     return render_template('index.html')
+
 
 @app.route('/media_dl/admin')
 def strage():
@@ -41,29 +40,58 @@ def info():
     access_id = uuid.uuid4()
     if url == "":
         return "urlを入力してください。"
-    
     with yt_dlp.YoutubeDL() as ydl:
         info_dict = ydl.extract_info(url, download=False)
-        json.dump(info_dict, open(f"media_info/{access_id}.json", "w", encoding="utf-8"), indent=4, ensure_ascii=False)
-        
+        json.dump(
+            info_dict,
+            open(f"media_info/{access_id}.json", "w", encoding="utf-8"),
+            indent=4,
+            ensure_ascii=False
+            )
     if "youtu" in url:
-        return render_template('info_youtube.html', title=info_dict['fulltitle'], url=url, format=format_type, display_id=info_dict["display_id"], access_id=access_id)
+        return render_template(
+            'info_youtube.html',
+            title=info_dict['fulltitle'],
+            url=url,
+            format=format_type,
+            display_id=info_dict["display_id"],
+            access_id=access_id
+        )
     elif "nico" in url:
-        return render_template('info_niconico.html', title=info_dict['fulltitle'], url=url, format=format_type, display_id=info_dict["display_id"], access_id=access_id)
+        return render_template(
+            'info_niconico.html',
+            title=info_dict['fulltitle'],
+            url=url,
+            format=format_type,
+            display_id=info_dict["display_id"],
+            access_id=access_id
+            )
     else:
-        return render_template('info.html', thumbnail=info_dict['thumbnail'], title=info_dict['fulltitle'], url=url, format=format_type, access_id=access_id)
-        
+        return render_template(
+            'info.html',
+            thumbnail=info_dict['thumbnail'],
+            title=info_dict['fulltitle'],
+            url=url, format=format_type,
+            access_id=access_id
+            )
+
 
 @app.route('/media_dl/download', methods=['GET', 'POST'])
 def download():
     access_id = request.args['access_id']
     with open(f"media_info/{access_id}.json", encoding="utf-8") as f:
         info = json.load(f)
-    
+
     url = info["original_url"]
     format_type = request.args['format']
-    
-    print(f"---ダウンロード情報---\nurl: {url}\nフォーマット: {format_type}\nIP: {request.environ['REMOTE_ADDR']}\n----------------------")
+
+    print(f"""
+    ---ダウンロード情報---
+    url: {url}
+    フォーマット: {format_type}
+    IP: {request.environ['REMOTE_ADDR']}
+    ----------------------
+    """)
 
     ydl_opts = {
         'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[ext=mp4]',
@@ -89,7 +117,7 @@ def download():
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=False)
         filename = ydl.prepare_filename(info_dict)
-        
+
         ydl.download([url])
 
     filename = os.path.split(filename)[1]
@@ -100,6 +128,7 @@ def download():
 @app.route('/sus2svg', methods=['GET'])
 def sus2svg():
     return render_template("sus2svg.html")
+
 
 @app.route('/sus2svg/generate', methods=['POST', 'GET'])
 def generate_svg():
@@ -123,14 +152,13 @@ def generate_svg():
         for event in rebase['events']
     ])
 
-
     if xy_type == "x":
         sus.export_xdraw(file_name=f"svgdata/{susId}.svg")
     if xy_type == "y":
         sus.export_ydraw(file_name=f"svgdata/{susId}.svg")
 
     return send_file(f"svgdata/{susId}.svg")
-    
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=80, host="0.0.0.0")
